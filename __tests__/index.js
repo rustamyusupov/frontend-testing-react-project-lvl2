@@ -13,8 +13,10 @@ afterAll(() => server.close());
 
 describe('todo test', () => {
   it('should render application', () => {
-    const { getByText } = render(<App />);
+    const { getByText, getByRole } = render(<App />);
 
     expect(getByText('Hexlet Todos')).toBeInTheDocument();
+    expect(getByRole('textbox', {  name: /new list/i})).toBeInTheDocument();
+    expect(getByRole('textbox', {  name: /new task/i})).toBeInTheDocument();
   });
 });
