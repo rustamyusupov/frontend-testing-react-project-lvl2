@@ -9,7 +9,9 @@
     "url": "git+https://github.com/rustamyusupov/frontend-testing-react-project-lvl2.git"
   },
   "scripts": {
-    "test": "npx jest --bail"
+    "start": "npx @hexlet/react-todo-app-with-backend",
+    "test": "npx jest",
+    "test:watch": "npx jest --watch"
   },
   "devDependencies": {
     "@jest/globals": "^27.0.1",
