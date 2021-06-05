@@ -7,22 +7,32 @@ import userEvent from '@testing-library/user-event';
 
 const initialState = {
   currentListId: 1,
-  lists: [{ id: 0, name: 'primary', removable: false }],
+  lists: [{ id: 1, name: 'primary', removable: false }],
   tasks: [],
 };
 
 const server = setupServer(
   rest.post('/api/v1/lists/:id/tasks', (req, res, ctx) => {
     const task = {
-      completed: false,
-      id: 3,
+      id: 1,
       listId: Number(req.params.id),
       text: req.body.text,
-      touched: 1622887145394,
+      completed: false,
+      touched: Date.now(),
     };
 
     return res(ctx.json(task));
   }),
+  rest.patch('/api/v1/tasks/:id', (req, res, ctx) => {
+    const task = {
+      completed: req.body.completed,
+      id: 1,
+      listId: 1,
+      touched: Date.now(),
+    };
+
+    return res(ctx.json(task));
+  })
 );
 
 beforeAll(() => server.listen());
@@ -45,5 +55,26 @@ describe('todo test', () => {
     userEvent.click(getByRole('button', {  name: /add/i}));
 
     expect(await waitFor(() => getByText('test'))).toBeInTheDocument();
+  });
+
+  it('should checked task', async () => {
+    const preloadedState = {
+      ...initialState,
+      tasks: [
+        {
+          id: 1,
+          listId: 1,
+          text: 'test',
+          completed: false,
+          touched: Date.now(),
+        }
+      ]
+    };
+    const { getByRole, findByRole } = render(<App { ...preloadedState } />);
+
+    userEvent.click(getByRole('checkbox', { name: 'test' }));
+
+    expect(await findByRole('checkbox', { name: 'test' })).toBeVisible();
+    expect(await findByRole('checkbox', { name: 'test' })).toBeChecked();
   });  
 });
