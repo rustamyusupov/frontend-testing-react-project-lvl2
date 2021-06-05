@@ -25,9 +25,19 @@ const server = setupServer(
   }),
   rest.patch('/api/v1/tasks/:id', (req, res, ctx) => {
     const task = {
-      completed: req.body.completed,
       id: 1,
       listId: 1,
+      completed: req.body.completed,
+      touched: Date.now(),
+    };
+
+    return res(ctx.json(task));
+  }),
+  rest.delete('/api/v1/tasks/:id', (req, res, ctx) => {
+    const task = {
+      id: Number(req.params.id),
+      listId: 1,
+      completed: req.body.completed,
       touched: Date.now(),
     };
 
@@ -76,5 +86,25 @@ describe('todo test', () => {
 
     expect(await findByRole('checkbox', { name: 'test' })).toBeVisible();
     expect(await findByRole('checkbox', { name: 'test' })).toBeChecked();
+  });
+  
+  it('should delete task', async () => {
+    const preloadedState = {
+      ...initialState,
+      tasks: [
+        {
+          id: 1,
+          listId: 1,
+          text: 'test',
+          completed: true,
+          touched: Date.now(),
+        }
+      ]
+    };
+    const { getByRole, getByText } = render(<App { ...preloadedState } />);
+    
+    userEvent.click(getByRole('button', { name: 'Remove' }));
+
+    expect(await waitFor(() => getByText('test'))).not.toBeInTheDocument();
   });  
 });
