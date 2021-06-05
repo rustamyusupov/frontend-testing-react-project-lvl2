@@ -15,7 +15,7 @@ const server = setupServer(
   rest.post('/api/v1/lists/:id/tasks', (req, res, ctx) => {
     const task = {
       id: 1,
-      listId: Number(req.params.id),
+      listId: 1,
       text: req.body.text,
       completed: false,
       touched: Date.now(),
@@ -34,15 +34,8 @@ const server = setupServer(
     return res(ctx.json(task));
   }),
   rest.delete('/api/v1/tasks/:id', (req, res, ctx) => {
-    const task = {
-      id: Number(req.params.id),
-      listId: 1,
-      completed: req.body.completed,
-      touched: Date.now(),
-    };
-
-    return res(ctx.json(task));
-  })
+    return res(ctx.status(204));
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -95,16 +88,17 @@ describe('todo test', () => {
         {
           id: 1,
           listId: 1,
-          text: 'test',
+          text: 'for delete',
           completed: true,
           touched: Date.now(),
         }
       ]
     };
-    const { getByRole, getByText } = render(<App { ...preloadedState } />);
-    
-    userEvent.click(getByRole('button', { name: 'Remove' }));
+    const { getByRole, findByText, getByText } = render(<App { ...preloadedState } />);
 
-    expect(await waitFor(() => getByText('test'))).not.toBeInTheDocument();
+    userEvent.click(getByRole('button', { name: 'Remove' }));
+    await waitFor(() => getByRole('heading', { name: 'Tasks' }));
+
+    expect(await waitFor(() => getByText('for delete'))).not.toBeInTheDocument();
   });  
 });
