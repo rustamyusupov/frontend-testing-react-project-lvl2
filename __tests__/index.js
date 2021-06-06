@@ -176,4 +176,31 @@ describe('todo test', () => {
 
     await waitFor(() => expect(queryByText('test')).toBeNull());
   });
+
+  it('should create list with same name', async () => {
+    const preloadedState = {
+      ...initialState,
+      tasks: [
+        {
+          id: 1,
+          listId: 1,
+          text: 'test',
+          completed: false,
+          touched: Date.now(),
+        },
+      ],
+    };
+    const {
+      container, getByRole, getAllByRole, queryByText,
+    } = render(<App { ...preloadedState } />);
+    const addButton = container.querySelector('.col-3 > form > div > button');
+
+    userEvent.type(getByRole('textbox', { name: /new list/i }), 'primary');
+    userEvent.click(addButton);
+
+    await waitFor(() => expect(getAllByRole('button', { name: /primary/i })).toHaveLength(2));
+
+    userEvent.click(getAllByRole('button', { name: /primary/i })[1]);
+    await waitFor(() => expect(queryByText('test')).toBeNull());
+  });
 });
