@@ -12,6 +12,12 @@ const initialState = {
 };
 
 const server = setupServer(
+  rest.post('/api/v1/lists', (req, res, ctx) => {
+    const list = { id: 3, name: req.body.name, removable: true };
+
+    return res(ctx.json(list));
+  }),
+  rest.delete('/api/v1/lists/:id', (req, res, ctx) => res(ctx.status(204))),
   rest.post('/api/v1/lists/:id/tasks', (req, res, ctx) => {
     const task = {
       id: 1,
@@ -105,7 +111,7 @@ describe('todo test', () => {
       ...initialState,
       lists: [
         ...initialState.lists,
-        { id: 2, name: 'secondary', removable: false },
+        { id: 2, name: 'secondary', removable: true },
       ],
       tasks: [
         {
@@ -134,5 +140,40 @@ describe('todo test', () => {
     userEvent.click(getByRole('button', { name: /secondary/i }));
 
     expect(await findByText('test2')).toBeVisible();
+  });
+
+  it('should delete/create list', async () => {
+    const preloadedState = {
+      ...initialState,
+      lists: [
+        ...initialState.lists,
+        { id: 2, name: 'secondary', removable: true },
+      ],
+      tasks: [
+        {
+          id: 1,
+          listId: 2,
+          text: 'test',
+          completed: true,
+          touched: Date.now(),
+        },
+      ],
+    };
+    const { container, queryByText, getByRole } = render(<App { ...preloadedState } />);
+    const deleteButton = container.querySelector('.col-3 > ul > li:last-child > div > button:last-child');
+    const addButton = container.querySelector('.col-3 > form > div > button');
+
+    userEvent.click(deleteButton);
+
+    await waitFor(() => expect(queryByText('secondary')).toBeNull());
+
+    userEvent.type(getByRole('textbox', { name: /new list/i }), 'secondary');
+    userEvent.click(addButton);
+
+    await waitFor(() => expect(queryByText('secondary')).toBeVisible());
+
+    userEvent.click(getByRole('button', { name: /secondary/i }));
+
+    await waitFor(() => expect(queryByText('test')).toBeNull());
   });
 });
