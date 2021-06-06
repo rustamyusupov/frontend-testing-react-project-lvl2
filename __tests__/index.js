@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, screen } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import App from '@hexlet/react-todo-app-with-backend';
@@ -77,8 +77,8 @@ describe('todo test', () => {
 
     userEvent.click(getByRole('checkbox', { name: 'test' }));
 
-    expect(await findByRole('checkbox', { name: 'test' })).toBeVisible();
-    expect(await findByRole('checkbox', { name: 'test' })).toBeChecked();
+    expect(await findByRole('checkbox', { name: /test/i })).toBeVisible();
+    expect(await findByRole('checkbox', { name: /test/i })).toBeChecked();
   });
   
   it('should delete task', async () => {
@@ -94,11 +94,11 @@ describe('todo test', () => {
         }
       ]
     };
-    const { getByRole, findByText, getByText } = render(<App { ...preloadedState } />);
-
-    userEvent.click(getByRole('button', { name: 'Remove' }));
-    await waitFor(() => getByRole('heading', { name: 'Tasks' }));
-
-    expect(await waitFor(() => getByText('for delete'))).not.toBeInTheDocument();
+    const { findByText, getByRole, queryByText } = render(<App { ...preloadedState } />);
+            
+    expect(await findByText('for delete')).toBeVisible();
+    userEvent.click(getByRole('button', { name: /remove/i }));
+  
+    await waitFor(() => expect(queryByText('for delete')).toBeNull());
   });  
 });
