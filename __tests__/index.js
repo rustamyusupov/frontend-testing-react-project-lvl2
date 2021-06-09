@@ -1,6 +1,8 @@
 import React from 'react';
 import App from '@hexlet/react-todo-app-with-backend';
-import { render, waitFor, screen } from '@testing-library/react';
+import {
+  render, waitFor, screen, within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import server from '../mocks/server';
@@ -28,9 +30,10 @@ describe('todo test', () => {
     render(<App {...initialState} />);
 
     userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
-    userEvent.click(screen.getByRole('button', { name: /add/i }));
+    userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    await screen.findByText('test');
 
-    expect(await waitFor(() => screen.getByText('test'))).toBeInTheDocument();
+    expect(screen.getByText('test')).toBeVisible();
   });
 
   it('should checked task', async () => {
@@ -131,7 +134,6 @@ describe('todo test', () => {
     const { container } = render(<App { ...preloadedState } />);
     const deleteButton = container.querySelector('.col-3 > ul > li:last-child > div > button:last-child');
     const addButton = container.querySelector('.col-3 > form > div > button');
-    // update backend, replace container to query like getByRole
 
     userEvent.click(deleteButton);
 
