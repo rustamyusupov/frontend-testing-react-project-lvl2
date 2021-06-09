@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from '@testing-library/react';
-import App from '@hexlet/react-todo-app-with-backend';
 import React from 'react';
+import App from '@hexlet/react-todo-app-with-backend';
+import { render, waitFor, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import server from '../mocks/server';
