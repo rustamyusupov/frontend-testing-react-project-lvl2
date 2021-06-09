@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, screen } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import App from '@hexlet/react-todo-app-with-backend';
@@ -48,20 +48,20 @@ afterAll(() => server.close());
 
 describe('todo test', () => {
   it('should render application', () => {
-    const { getByText, getByRole } = render(<App />);
+    render(<App />);
 
-    expect(getByText('Hexlet Todos')).toBeInTheDocument();
-    expect(getByRole('textbox', { name: /new list/i })).toBeInTheDocument();
-    expect(getByRole('textbox', { name: /new task/i })).toBeInTheDocument();
+    expect(screen.getByText('Hexlet Todos')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /new list/i })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /new task/i })).toBeInTheDocument();
   });
 
   it('should create task', async () => {
-    const { getByRole, getByText } = render(<App {...initialState} />);
+    render(<App {...initialState} />);
 
-    userEvent.type(getByRole('textbox', { name: /new task/i }), 'test');
-    userEvent.click(getByRole('button', { name: /add/i }));
+    userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
+    userEvent.click(screen.getByRole('button', { name: /add/i }));
 
-    expect(await waitFor(() => getByText('test'))).toBeInTheDocument();
+    expect(await waitFor(() => screen.getByText('test'))).toBeInTheDocument();
   });
 
   it('should checked task', async () => {
@@ -77,12 +77,12 @@ describe('todo test', () => {
         },
       ],
     };
-    const { getByRole, findByRole } = render(<App { ...preloadedState } />);
+    render(<App { ...preloadedState } />);
 
-    userEvent.click(getByRole('checkbox', { name: 'test' }));
+    userEvent.click(screen.getByRole('checkbox', { name: 'test' }));
 
-    expect(await findByRole('checkbox', { name: /test/i })).toBeVisible();
-    expect(await findByRole('checkbox', { name: /test/i })).toBeChecked();
+    expect(await screen.findByRole('checkbox', { name: /test/i })).toBeVisible();
+    expect(await screen.findByRole('checkbox', { name: /test/i })).toBeChecked();
   });
 
   it('should delete task', async () => {
@@ -98,12 +98,12 @@ describe('todo test', () => {
         },
       ],
     };
-    const { findByText, getByRole, queryByText } = render(<App { ...preloadedState } />);
+    render(<App { ...preloadedState } />);
 
-    expect(await findByText('for delete')).toBeVisible();
-    userEvent.click(getByRole('button', { name: /remove/i }));
+    expect(await screen.findByText('for delete')).toBeVisible();
+    userEvent.click(screen.getByRole('button', { name: /remove/i }));
 
-    await waitFor(() => expect(queryByText('for delete')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('for delete')).toBeNull());
   });
 
   it('should delete task for specific list', async () => {
@@ -130,16 +130,16 @@ describe('todo test', () => {
         },
       ],
     };
-    const { findByText, getByRole, queryByText } = render(<App { ...preloadedState } />);
+    render(<App { ...preloadedState } />);
 
-    expect(await findByText('for delete')).toBeVisible();
-    userEvent.click(getByRole('button', { name: /remove/i }));
+    expect(await screen.findByText('for delete')).toBeVisible();
+    userEvent.click(screen.getByRole('button', { name: /remove/i }));
 
-    await waitFor(() => expect(queryByText('for delete')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('for delete')).toBeNull());
 
-    userEvent.click(getByRole('button', { name: /secondary/i }));
+    userEvent.click(screen.getByRole('button', { name: /secondary/i }));
 
-    expect(await findByText('test2')).toBeVisible();
+    expect(await screen.findByText('test2')).toBeVisible();
   });
 
   it('should delete/create list', async () => {
@@ -159,22 +159,23 @@ describe('todo test', () => {
         },
       ],
     };
-    const { container, queryByText, getByRole } = render(<App { ...preloadedState } />);
+    const { container } = render(<App { ...preloadedState } />);
     const deleteButton = container.querySelector('.col-3 > ul > li:last-child > div > button:last-child');
     const addButton = container.querySelector('.col-3 > form > div > button');
+    // update backend, replace container to query like getByRole
 
     userEvent.click(deleteButton);
 
-    await waitFor(() => expect(queryByText('secondary')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('secondary')).toBeNull());
 
-    userEvent.type(getByRole('textbox', { name: /new list/i }), 'secondary');
+    userEvent.type(screen.getByRole('textbox', { name: /new list/i }), 'secondary');
     userEvent.click(addButton);
 
-    await waitFor(() => expect(queryByText('secondary')).toBeVisible());
+    await waitFor(() => expect(screen.queryByText('secondary')).toBeVisible());
 
-    userEvent.click(getByRole('button', { name: /secondary/i }));
+    userEvent.click(screen.getByRole('button', { name: /secondary/i }));
 
-    await waitFor(() => expect(queryByText('test')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('test')).toBeNull());
   });
 
   it('should create list with same name', async () => {
@@ -190,17 +191,15 @@ describe('todo test', () => {
         },
       ],
     };
-    const {
-      container, getByRole, getAllByRole, queryByText,
-    } = render(<App { ...preloadedState } />);
+    const { container } = render(<App { ...preloadedState } />);
     const addButton = container.querySelector('.col-3 > form > div > button');
 
-    userEvent.type(getByRole('textbox', { name: /new list/i }), 'primary');
+    userEvent.type(screen.getByRole('textbox', { name: /new list/i }), 'primary');
     userEvent.click(addButton);
 
-    await waitFor(() => expect(getAllByRole('button', { name: /primary/i })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /primary/i })).toHaveLength(2));
 
-    userEvent.click(getAllByRole('button', { name: /primary/i })[1]);
-    await waitFor(() => expect(queryByText('test')).toBeNull());
+    userEvent.click(screen.getAllByRole('button', { name: /primary/i })[1]);
+    await waitFor(() => expect(screen.queryByText('test')).toBeNull());
   });
 });
