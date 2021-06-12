@@ -29,7 +29,7 @@ const getServer = (initialState = {}) => {
       const newId = getNextId(tasks);
       const task = {
         id: newId,
-        listId: req.params.listId,
+        listId: Number(req.params.id),
         text: req.body.text,
         completed: false,
         touched: Date.now(),
