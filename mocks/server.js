@@ -40,12 +40,8 @@ const getServer = (initialState = {}) => {
       return res(ctx.json(task));
     }),
     rest.patch('/api/v1/tasks/:id', (req, res, ctx) => {
-      const checkedTask = {
-        id: req.params.taskId,
-        listId: req.params.listId,
-        completed: req.body.completed,
-        touched: Date.now(),
-      };
+      const currentTask = tasks.find((task) => task.id === Number(req.params.id));
+      const checkedTask = { ...currentTask, completed: req.body.completed, touched: Date.now() };
 
       tasks = tasks.map((task) => (task.id === req.params.taskId ? checkedTask : task));
 
