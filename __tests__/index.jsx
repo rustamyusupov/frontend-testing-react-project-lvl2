@@ -3,6 +3,7 @@ import {
   render, waitFor, screen, waitForElementToBeRemoved,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { rest } from 'msw';
 
 import getServer from '../mocks/server';
 
@@ -76,6 +77,41 @@ describe('todo test', () => {
       await deleteTask('test');
 
       expect(screen.queryByText('test')).not.toBeInTheDocument();
+    });
+
+    it('should disable field and button', async () => {
+      const textbox = screen.getByRole('textbox', { name: /new task/i });
+      const button = screen.getByRole('button', { name: 'Add', exact: true });
+
+      server.use(
+        rest.post('/api/v1/lists/:id/tasks', (req, res, ctx) => res(
+          ctx.delay(1000),
+          ctx.json({
+            id: 0,
+            listId: Number(req.params.id),
+            text: req.body.text,
+            completed: false,
+            touched: Date.now(),
+          }),
+        )),
+      );
+
+      userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
+      userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
+
+      await waitFor(() => expect(textbox).toHaveAttribute('readonly'));
+      await waitFor(() => expect(button).toBeDisabled());
+      expect(await screen.findByText('test')).toBeVisible();
+    });
+
+    it('should prevent create task when error', async () => {
+      server.use(rest.post('/api/v1/lists/:id/tasks', (req, res, ctx) => res(ctx.status(500))));
+
+      userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
+      userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
+
+      await waitFor(() => expect(screen.queryByText('test')).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText(/network error/i)).toBeVisible());
     });
   });
 
