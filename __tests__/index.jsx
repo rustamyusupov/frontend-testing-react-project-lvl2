@@ -1,4 +1,3 @@
-import React from 'react';
 import App from '@hexlet/react-todo-app-with-backend';
 import {
   render, waitFor, screen, waitForElementToBeRemoved,
@@ -20,6 +19,21 @@ const createTask = (text) => {
   userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
 
   return screen.findByText(text);
+};
+
+const deleteTask = (text) => {
+  userEvent.click(screen.getByRole('button', { name: 'Remove', exact: true }));
+
+  return waitForElementToBeRemoved(screen.queryByText(text));
+};
+
+const createList = (name) => {
+  const addButton = screen.getByRole('button', { name: /add list/i });
+
+  userEvent.type(screen.getByRole('textbox', { name: /new list/i }), name);
+  userEvent.click(addButton);
+
+  return screen.findByText(name);
 };
 
 beforeEach(async () => {
@@ -59,106 +73,49 @@ describe('todo test', () => {
 
     it('should delete task', async () => {
       await createTask('test');
-      userEvent.click(screen.getByRole('button', { name: /remove/i }));
-      await waitForElementToBeRemoved(screen.queryByText('test'));
+      await deleteTask('test');
 
       expect(screen.queryByText('test')).not.toBeInTheDocument();
     });
   });
 
-  it.skip('should delete task for specific list', async () => {
-    const preloadedState = {
-      ...initialState,
-      lists: [
-        ...initialState.lists,
-        { id: 2, name: 'secondary', removable: true },
-      ],
-      tasks: [
-        {
-          id: 1,
-          listId: 1,
-          text: 'for delete',
-          completed: true,
-          touched: Date.now(),
-        },
-        {
-          id: 2,
-          listId: 2,
-          text: 'test2',
-          completed: true,
-          touched: Date.now(),
-        },
-      ],
-    };
-    render(<App { ...preloadedState } />);
+  describe('list tests', () => {
+    it('should create list', async () => {
+      await createList('secondary');
 
-    expect(await screen.findByText('for delete')).toBeVisible();
-    userEvent.click(screen.getByRole('button', { name: /remove/i }));
+      expect(await screen.findByText('secondary')).toBeInTheDocument();
+    });
 
-    await waitFor(() => expect(screen.queryByText('for delete')).toBeNull());
+    it('should delete list', async () => {
+      await createList('secondary');
 
-    userEvent.click(screen.getByRole('button', { name: /secondary/i }));
+      expect(await screen.findByText('secondary')).toBeInTheDocument();
 
-    expect(await screen.findByText('test2')).toBeVisible();
-  });
+      const deleteButton = screen.getByRole('button', { name: /remove list/i });
 
-  it.skip('should delete/create list', async () => {
-    const preloadedState = {
-      ...initialState,
-      lists: [
-        ...initialState.lists,
-        { id: 2, name: 'secondary', removable: true },
-      ],
-      tasks: [
-        {
-          id: 1,
-          listId: 2,
-          text: 'test',
-          completed: true,
-          touched: Date.now(),
-        },
-      ],
-    };
-    const { container } = render(<App { ...preloadedState } />);
-    const deleteButton = container.querySelector('.col-3 > ul > li:last-child > div > button:last-child');
-    const addButton = container.querySelector('.col-3 > form > div > button');
+      userEvent.click(deleteButton);
 
-    userEvent.click(deleteButton);
+      await waitFor(() => expect(screen.queryByText('secondary')).not.toBeInTheDocument());
+    });
 
-    await waitFor(() => expect(screen.queryByText('secondary')).toBeNull());
+    it('shouldn\'t create list with same name', async () => {
+      await createList('primary');
 
-    userEvent.type(screen.getByRole('textbox', { name: /new list/i }), 'secondary');
-    userEvent.click(addButton);
+      expect(await screen.findByText(/already exists/i)).toBeVisible();
+    });
 
-    await waitFor(() => expect(screen.queryByText('secondary')).toBeVisible());
+    it('should delete task for specific list', async () => {
+      await createTask('test');
+      await createList('secondary');
+      userEvent.click(screen.getByRole('button', { name: /secondary/i }));
+      await createTask('test');
 
-    userEvent.click(screen.getByRole('button', { name: /secondary/i }));
+      expect(screen.getByText('test')).toBeVisible();
 
-    await waitFor(() => expect(screen.queryByText('test')).toBeNull());
-  });
+      await deleteTask('test');
+      userEvent.click(screen.getByRole('button', { name: /primary/i }));
 
-  it.skip('should create list with same name', async () => {
-    const preloadedState = {
-      ...initialState,
-      tasks: [
-        {
-          id: 1,
-          listId: 1,
-          text: 'test',
-          completed: false,
-          touched: Date.now(),
-        },
-      ],
-    };
-    const { container } = render(<App { ...preloadedState } />);
-    const addButton = container.querySelector('.col-3 > form > div > button');
-
-    userEvent.type(screen.getByRole('textbox', { name: /new list/i }), 'primary');
-    userEvent.click(addButton);
-
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /primary/i })).toHaveLength(2));
-
-    userEvent.click(screen.getAllByRole('button', { name: /primary/i })[1]);
-    await waitFor(() => expect(screen.queryByText('test')).toBeNull());
+      expect(await screen.findByText('test')).toBeVisible();
+    });
   });
 });
