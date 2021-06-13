@@ -61,7 +61,7 @@ describe('todo test', () => {
     it('should create task', async () => {
       await createTask('test');
 
-      expect(screen.getByText('test')).toBeVisible();
+      expect(screen.queryByText('test')).toBeInTheDocument();
     });
 
     it('should checked task', async () => {
@@ -146,12 +146,27 @@ describe('todo test', () => {
       userEvent.click(screen.getByRole('button', { name: /secondary/i }));
       await createTask('test');
 
-      expect(screen.getByText('test')).toBeVisible();
+      expect(screen.queryByText('test')).toBeInTheDocument();
 
       await deleteTask('test');
       userEvent.click(screen.getByRole('button', { name: /primary/i }));
 
-      expect(await screen.findByText('test')).toBeVisible();
+      expect(screen.queryByText('test')).toBeInTheDocument();
+    });
+
+    it('shouldn\'t return same tasks for recovered list', async () => {
+      await createList('secondary');
+      userEvent.click(screen.getByRole('button', { name: /secondary/i }));
+      await createTask('test');
+      expect(screen.queryByText('test')).toBeInTheDocument();
+
+      const deleteButton = screen.getByRole('button', { name: /remove list/i });
+      userEvent.click(deleteButton);
+      await waitFor(() => expect(screen.queryByText('secondary')).not.toBeInTheDocument());
+
+      await createList('secondary');
+      userEvent.click(screen.getByRole('button', { name: /secondary/i }));
+      expect(screen.queryByText('test')).not.toBeInTheDocument();
     });
   });
 });
