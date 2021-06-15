@@ -98,8 +98,10 @@ describe('todo test', () => {
       userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
       userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
 
-      await waitFor(() => expect(textbox).toHaveAttribute('readonly'));
-      await waitFor(() => expect(button).toBeDisabled());
+      await waitFor(() => {
+        expect(textbox).toHaveAttribute('readonly');
+        expect(button).toBeDisabled()
+      });
       expect(await screen.findByText('test')).toBeVisible();
     });
 
@@ -109,8 +111,10 @@ describe('todo test', () => {
       userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
       userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
 
-      await waitFor(() => expect(screen.queryByText('test')).not.toBeInTheDocument());
-      await waitFor(() => expect(screen.queryByText(/network error/i)).toBeVisible());
+      await waitFor(() => {
+        expect(screen.queryByText('test')).not.toBeInTheDocument();
+        expect(screen.queryByText(/network error/i)).toBeVisible();
+      });
     });
   });
 
