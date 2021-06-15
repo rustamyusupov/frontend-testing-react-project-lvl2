@@ -7,13 +7,7 @@ import { rest } from 'msw';
 
 import getServer from '../mocks/server';
 
-const initialState = {
-  currentListId: 1,
-  lists: [{ id: 1, name: 'primary', removable: false }],
-  tasks: [],
-};
-
-let server = getServer(initialState);
+let server = getServer();
 
 const createTask = (text) => {
   userEvent.type(screen.getByRole('textbox', { name: /new task/i }), text);
@@ -38,6 +32,11 @@ const createList = (name) => {
 };
 
 beforeEach(async () => {
+  const initialState = {
+    currentListId: 1,
+    lists: [{ id: 1, name: 'primary', removable: false }],
+    tasks: [],
+  };
   const vdom = await App(initialState);
 
   server = getServer(initialState);
