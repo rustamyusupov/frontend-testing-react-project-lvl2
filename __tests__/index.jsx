@@ -104,10 +104,8 @@ describe('todo test', () => {
       userEvent.type(screen.getByRole('textbox', { name: /new task/i }), 'test');
       userEvent.click(screen.getByRole('button', { name: 'Add', exact: true }));
 
-      await waitFor(() => {
-        expect(textbox).toHaveAttribute('readonly');
-        expect(button).toBeDisabled();
-      });
+      await waitFor(() => expect(textbox).toHaveAttribute('readonly'));
+      expect(button).toBeDisabled();
       expect(await screen.findByText('test')).toBeVisible();
     });
 
