@@ -163,6 +163,7 @@ describe('todo test', () => {
 
     it('shouldn\'t return same tasks for recovered list', async () => {
       await createList('secondary');
+
       userEvent.click(screen.getByRole('button', { name: /secondary/i }));
       await createTask('test');
       expect(screen.queryByText('test')).toBeInTheDocument();
