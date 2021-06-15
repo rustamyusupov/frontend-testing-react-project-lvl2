@@ -65,10 +65,16 @@ describe('todo test', () => {
 
     it('should checked task', async () => {
       await createTask('test');
-      userEvent.click(screen.getByRole('checkbox', { name: /test/i }));
 
-      expect(await screen.findByRole('checkbox', { name: /test/i })).toBeVisible();
-      expect(await screen.findByRole('checkbox', { name: /test/i })).toBeChecked();
+      const checkbox = screen.getByRole('checkbox', { name: /test/i });
+
+      expect(checkbox).not.toBeChecked();
+
+      userEvent.click(checkbox);
+
+      expect(checkbox).toBeDisabled();
+      await waitFor(() => expect(checkbox).toBeChecked());
+      expect(checkbox).toBeEnabled();
     });
 
     it('should delete task', async () => {
@@ -100,7 +106,7 @@ describe('todo test', () => {
 
       await waitFor(() => {
         expect(textbox).toHaveAttribute('readonly');
-        expect(button).toBeDisabled()
+        expect(button).toBeDisabled();
       });
       expect(await screen.findByText('test')).toBeVisible();
     });
